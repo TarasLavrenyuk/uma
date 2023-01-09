@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -75,7 +76,13 @@ class UserController(
         }
     }
 
-    // GET /users/{id} - get user by id
+    @GetMapping("/{userId}")
+    fun getUser(
+        @PathVariable userId: UUID
+    ): ResponseEntity<UserResponse> {
+        return ResponseEntity.ok(userService.getUser(userId = userId))
+    }
+
     // GET /users?limit=&offset=&sort=name_asc|name_desc|email_asc|age_asc|age_desc&name=&email=&phone=
     // find user by different criterias
 

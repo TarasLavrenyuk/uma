@@ -89,6 +89,14 @@ class UserService(
     }
 
     /**
+     * @throws UserNotFoundException if with id [userId] does not exist
+     */
+    fun getUser(userId: UUID): UserResponse {
+        val userEntity = userRepo.findByIdOrNull(userId) ?: throw UserNotFoundException(userId.toString())
+        return UserResponse.fromUser(userEntity)
+    }
+
+    /**
      * @throws InvalidUserDataException if [payload] is invalid
      */
     private fun validateNewUserPayload(
