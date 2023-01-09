@@ -1,4 +1,4 @@
-package com.introduct.uma
+package com.introduct.uma.exceptions
 
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
