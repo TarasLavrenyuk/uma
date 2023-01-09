@@ -30,7 +30,7 @@ class UserService(
         val newUser = UserEntity(
             name = payload.name.trim(),
             email = payload.email,
-            phone = payload.phone,
+            phone = payload.phone.trim(),
             age = agifyService.getAgeForName(payload.name.trim())
         ).also {
             userRepo.save(it)
