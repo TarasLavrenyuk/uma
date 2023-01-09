@@ -22,11 +22,11 @@ class AgifyClient(
             URI("$AGIFY_BASE_URL/?name=$name")
         )
 
-        try {
-            return restTemplate.exchange(httpEntity, AgifyResponse::class.java)
+        return try {
+            restTemplate.exchange(httpEntity, AgifyResponse::class.java)
         } catch (e: RestClientResponseException) {
             logger.warn("Error during agify-get-name request.", e)
-            return null
+            null
         }
     }
 
