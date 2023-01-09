@@ -4,6 +4,7 @@ import java.util.UUID
 import com.introduct.uma.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -39,7 +40,15 @@ class UserController(
         return ResponseEntity.ok(userResponse)
     }
 
-    // PUT /users/{id} - update user
+    @DeleteMapping("/{userId}")
+    fun deleteUser(
+        @PathVariable userId: UUID
+    ): ResponseEntity<Void> {
+        userService.deleteUser(userId = userId)
+        return ResponseEntity
+            .status(HttpStatus.NO_CONTENT)
+            .build()
+    }
 
     // DELETE /users/{id} - delete user by id
     // DELETE /users?ids=1,2,3 - delete multiple users by id

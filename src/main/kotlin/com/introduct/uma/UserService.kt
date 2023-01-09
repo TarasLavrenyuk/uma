@@ -8,6 +8,7 @@ import com.introduct.uma.web.CreateUserPayload
 import com.introduct.uma.web.UpdateUserPayload
 import com.introduct.uma.web.UserResponse
 import org.slf4j.LoggerFactory
+import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
@@ -59,6 +60,19 @@ class UserService(
         logger.debug("User was successfully updated. [userId=${userId}]")
 
         return UserResponse.fromUser(existingUserEntity)
+    }
+
+    /**
+     * @throws UserNotFoundException if [UserEntity] with [userId] doesn't exist
+     */
+    fun deleteUser(
+        userId: UUID
+    ) = try {
+        userRepo.deleteById(userId)
+        logger.debug("User successfully deleted. [userId=${userId}]")
+    } catch (e: EmptyResultDataAccessException) {
+        logger.warn("Trying to delete user. User not found. [userId=${userId}]", e)
+        throw UserNotFoundException(userId.toString())
     }
 
     /**

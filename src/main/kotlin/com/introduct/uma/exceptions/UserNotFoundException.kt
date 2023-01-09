@@ -6,7 +6,7 @@ import org.springframework.web.server.ResponseStatusException
 class UserNotFoundException(
     userId: String? = null
 ) : ResponseStatusException(
-    HttpStatus.BAD_REQUEST,
+    HttpStatus.NOT_FOUND,
     generateErrorMessage(userId)
 ) {
     companion object {
