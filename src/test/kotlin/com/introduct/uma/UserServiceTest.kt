@@ -373,6 +373,36 @@ class UserServiceTest {
         }
     }
 
+    @Nested
+    inner class GetUserTest {
+
+        @Test
+        fun `should throw exception if user not found`() {
+            val userId = UUID.randomUUID()
+
+            every { userRepo.findByIdOrNull(userId) } returns null
+
+            assertThat {
+                service.getUser(userId)
+            }.isFailure()
+                .isInstanceOf(UserNotFoundException::class.java)
+                .given {
+                    assertThat(it.status).isEqualTo(HttpStatus.NOT_FOUND)
+                    assertThat(it.reason).isEqualTo("User not found. [userId=${userId}]")
+                }
+        }
+
+        @Test
+        fun `should delete user`() {
+            val userId = UUID.randomUUID()
+
+            every { userRepo.findByIdOrNull(userId) } returns stubUser(userId)
+
+            val result = service.getUser(userId)
+            assertThat(result.id).isEqualTo(userId)
+        }
+    }
+
     fun stubUser(
         id: UUID = UUID.randomUUID(),
         name: String = "User name",
