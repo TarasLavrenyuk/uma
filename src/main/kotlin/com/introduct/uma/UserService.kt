@@ -13,7 +13,6 @@ import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
-
 @Service
 class UserService(
     private val userRepo: UserRepo,
@@ -79,13 +78,11 @@ class UserService(
         throw UserNotFoundException(userId = userId.toString())
     }
 
-    fun deleteUsers(userIds: List<UUID>) {
-        try {
-            userRepo.deleteAllById(userIds)
-        } catch (e: EmptyResultDataAccessException) {
-            logger.warn("Trying to delete users. One or more users are not found.", e)
-            throw UserNotFoundException(errorMessage = "One or more users are not found by given ids.")
-        }
+    fun deleteUsers(userIds: List<UUID>) = try {
+        userRepo.deleteAllById(userIds)
+    } catch (e: EmptyResultDataAccessException) {
+        logger.warn("Trying to delete users. One or more users are not found.", e)
+        throw UserNotFoundException(errorMessage = "One or more users are not found by given ids.")
     }
 
     /**
