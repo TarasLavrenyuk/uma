@@ -46,7 +46,8 @@ class UserService(
         payload: UpdateUserPayload
     ): UserResponse {
         logger.debug("Trying to update user. [userId=${userId}]")
-        val existingUserEntity = userRepo.findByIdOrNull(userId) ?: throw UserNotFoundException(userId.toString())
+        val existingUserEntity = userRepo.findByIdOrNull(userId)
+            ?: throw UserNotFoundException(userId = userId.toString())
         validateUpdateUserPayload(payload)
 
         existingUserEntity.apply {
@@ -72,7 +73,16 @@ class UserService(
         logger.debug("User successfully deleted. [userId=${userId}]")
     } catch (e: EmptyResultDataAccessException) {
         logger.warn("Trying to delete user. User not found. [userId=${userId}]", e)
-        throw UserNotFoundException(userId.toString())
+        throw UserNotFoundException(userId = userId.toString())
+    }
+
+    fun deleteUsers(userIds: List<UUID>) {
+        try {
+            userRepo.deleteAllById(userIds)
+        } catch (e: EmptyResultDataAccessException) {
+            logger.warn("Trying to delete users. One or more users are not found.", e)
+            throw UserNotFoundException(errorMessage = "One or more users are not found by given ids.")
+        }
     }
 
     /**
