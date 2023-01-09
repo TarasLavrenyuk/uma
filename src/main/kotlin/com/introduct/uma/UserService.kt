@@ -1,6 +1,7 @@
 package com.introduct.uma
 
 import java.util.UUID
+import com.introduct.uma.agify.AgifyService
 import com.introduct.uma.exceptions.InvalidUserDataException
 import com.introduct.uma.exceptions.UserNotFoundException
 import com.introduct.uma.utils.StringUtils
@@ -15,7 +16,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class UserService(
-    private val userRepo: UserRepo
+    private val userRepo: UserRepo,
+    private val agifyService: AgifyService
 ) {
 
     /**
@@ -27,9 +29,10 @@ class UserService(
         logger.debug("Trying to create new user.")
         validateNewUserPayload(payload)
         val newUser = UserEntity(
-            name = payload.name,
+            name = payload.name.trim(),
             email = payload.email,
             phone = payload.phone,
+            age = agifyService.getAgeForName(payload.name.trim())
         ).also {
             userRepo.save(it)
         }
@@ -48,6 +51,7 @@ class UserService(
         logger.debug("Trying to update user. [userId=${userId}]")
         val existingUserEntity = userRepo.findByIdOrNull(userId)
             ?: throw UserNotFoundException(userId = userId.toString())
+
         validateUpdateUserPayload(payload)
 
         existingUserEntity.apply {
@@ -59,7 +63,6 @@ class UserService(
         }
 
         logger.debug("User was successfully updated. [userId=${userId}]")
-
         return UserResponse.fromUser(existingUserEntity)
     }
 
@@ -94,6 +97,12 @@ class UserService(
         if (!StringUtils.isEmail(payload.email)) {
             throw InvalidUserDataException("'${payload.email}' is not a invalid email. Please correct.")
         }
+        if (payload.name.isBlank()) {
+            throw InvalidUserDataException("User name cannot be empty. Please correct.")
+        }
+        if (payload.phone.isBlank()) {
+            throw InvalidUserDataException("User phone cannot be empty. Please correct.")
+        }
     }
 
     /**
@@ -105,6 +114,16 @@ class UserService(
         payload.email?.let {
             if (!StringUtils.isEmail(it)) {
                 throw InvalidUserDataException("'${payload.email}' is not a invalid email. Please correct.")
+            }
+        }
+        payload.name?.let {
+            if (it.isBlank()) {
+                throw InvalidUserDataException("User name cannot be empty. Please correct.")
+            }
+        }
+        payload.phone?.let {
+            if (it.isBlank()) {
+                throw InvalidUserDataException("User phone cannot be empty. Please correct.")
             }
         }
     }

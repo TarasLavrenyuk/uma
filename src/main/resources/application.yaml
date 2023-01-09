@@ -6,3 +6,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+
+logging:
+  level:
+    com.introduct.uma: debug
+    o.s.web.client.RestTemplate: debug
+    root: info
