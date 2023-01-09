@@ -78,7 +78,7 @@ class UserService(
         throw UserNotFoundException(userId = userId.toString())
     }
 
-    fun deleteUsers(userIds: List<UUID>) = try {
+    fun deleteUsers(userIds: Collection<UUID>) = try {
         userRepo.deleteAllById(userIds)
     } catch (e: EmptyResultDataAccessException) {
         logger.warn("Trying to delete users. One or more users are not found.", e)

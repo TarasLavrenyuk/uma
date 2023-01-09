@@ -6,6 +6,7 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isFailure
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isNull
+import assertk.assertions.isSuccess
 import com.introduct.uma.agify.AgifyService
 import com.introduct.uma.exceptions.InvalidUserDataException
 import com.introduct.uma.exceptions.UserNotFoundException
@@ -19,6 +20,7 @@ import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 
@@ -310,6 +312,64 @@ class UserServiceTest {
             assertThat(result.email).isEqualTo(existingUser.email)
             assertThat(result.phone).isEqualTo("123456789")
             assertThat(result.age).isEqualTo(existingUser.age)
+        }
+    }
+
+    @Nested
+    inner class DeleteUserTest {
+
+        @Test
+        fun `should throw exception if user not found`() {
+            val userId = UUID.randomUUID()
+
+            every { userRepo.deleteById(userId) } throws EmptyResultDataAccessException(1)
+
+            assertThat {
+                service.deleteUser(userId)
+            }.isFailure()
+                .isInstanceOf(UserNotFoundException::class.java)
+                .given {
+                    assertThat(it.status).isEqualTo(HttpStatus.NOT_FOUND)
+                    assertThat(it.reason).isEqualTo("User not found. [userId=${userId}]")
+                }
+        }
+
+        @Test
+        fun `should delete user`() {
+            val userId = UUID.randomUUID()
+
+            every { userRepo.deleteById(userId) } returns Unit
+
+            assertThat { service.deleteUser(userId) }.isSuccess()
+        }
+    }
+
+    @Nested
+    inner class DeleteUsersTest {
+
+        @Test
+        fun `should throw exception if user not found`() {
+            val userIds = setOf(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())
+
+            every { userRepo.deleteAllById(userIds) } throws EmptyResultDataAccessException(3)
+
+            assertThat {
+                service.deleteUsers(userIds)
+            }.isFailure()
+                .isInstanceOf(UserNotFoundException::class.java)
+                .given {
+                    assertThat(it.status).isEqualTo(HttpStatus.NOT_FOUND)
+                    assertThat(it.reason).isEqualTo("One or more users are not found by given ids.")
+                }
+        }
+
+        @Test
+        fun `should delete user`() {
+            val userIds = setOf(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())
+
+            every { userRepo.deleteAllById(userIds) } returns Unit
+
+            assertThat { service.deleteUsers(userIds) }.isSuccess()
         }
     }
 
