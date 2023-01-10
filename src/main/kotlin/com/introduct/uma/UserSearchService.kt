@@ -2,11 +2,13 @@ package com.introduct.uma
 
 import com.introduct.uma.exceptions.InvalidArgumentException
 import com.introduct.uma.web.UserResponse
+import javax.persistence.criteria.Predicate
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Service
 
 @Service
@@ -15,10 +17,16 @@ class UserSearchService(
 ) {
 
     fun searchUsers(
-        pageable: Pageable
+        pageable: Pageable,
+        name: String?,
+        email: String?,
+        phone: String?
     ): Page<UserResponse> {
         validateSorting(pageable.sort)
-        val userEntitiesPage: Page<UserEntity> = userRepo.findAll(pageable)
+        val userEntitiesPage: Page<UserEntity> = userRepo.findAll(
+            buildSpecification(name, email, phone),
+            pageable
+        )
         return PageImpl(
             userEntitiesPage.content.map { UserResponse.fromUser(it) },
             pageable,
@@ -36,6 +44,19 @@ class UserSearchService(
                 )
             }
         }
+    }
+
+    private fun buildSpecification(
+        name: String?,
+        email: String?,
+        phone: String?
+    ): Specification<UserEntity> = Specification<UserEntity> { root, _, cb ->
+        val predicates = mutableListOf<Predicate>()
+        name?.let { predicates.add(cb.like(cb.upper(root.get("name")), "%${it.trim().uppercase()}%")) }
+        email?.let { predicates.add(cb.equal(root.get<UserEntity>("email"), it.trim())) }
+        phone?.let { predicates.add(cb.equal(root.get<UserEntity>("phone"), it.trim())) }
+
+        return@Specification cb.and(*predicates.toTypedArray())
     }
 
     enum class UserSortProperties(

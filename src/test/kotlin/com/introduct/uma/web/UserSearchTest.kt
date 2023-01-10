@@ -35,12 +35,12 @@ class UserSearchTest(
     }
 
     @Test
-    fun `should return paginated result`() {
+    fun `pagination should work`() {
         repeat(times = 5) {
             userRepo.save(
                 UserEntity(
                     name = UUID.randomUUID().toString(),
-                    email = "e$it@mail",
+                    email = "e$it@mail.com",
                     phone = "123456$it"
                 )
             )
@@ -59,11 +59,11 @@ class UserSearchTest(
 
     @Test
     fun `sorting should work`() {
-        val user1 = userRepo.save(UserEntity(name = "User C", email = "e@mail", phone = "123456"))
-        val user2 = userRepo.save(UserEntity(name = "User A", email = "e@mail", phone = "123456"))
-        val user3 = userRepo.save(UserEntity(name = "User E", email = "e@mail", phone = "123456"))
-        val user4 = userRepo.save(UserEntity(name = "User B", email = "e@mail", phone = "123456"))
-        val user5 = userRepo.save(UserEntity(name = "User D", email = "e@mail", phone = "123456"))
+        val user1 = userRepo.save(UserEntity(name = "User C", email = "e@mail.com", phone = "123456"))
+        val user2 = userRepo.save(UserEntity(name = "User A", email = "e@mail.com", phone = "123456"))
+        val user3 = userRepo.save(UserEntity(name = "User E", email = "e@mail.com", phone = "123456"))
+        val user4 = userRepo.save(UserEntity(name = "User B", email = "e@mail.com", phone = "123456"))
+        val user5 = userRepo.save(UserEntity(name = "User D", email = "e@mail.com", phone = "123456"))
 
         assertThat(userRepo.findAll()).hasSize(5)
 
@@ -77,11 +77,141 @@ class UserSearchTest(
         assertThat(users.map { it.id }).containsExactly(user3.id, user5.id, user1.id, user4.id, user2.id)
     }
 
+    @Test
+    fun `should search users by name`() {
+        val userJohn = userRepo.save(UserEntity(name = "John", email = "john@mail.com", phone = "123456"))
+        val userJohnathan = userRepo.save(
+            UserEntity(name = "Johnathan", email = "johnathan@mail.com", phone = "123456")
+        )
+        val userJames = userRepo.save(UserEntity(name = "James", email = "james@mail.com", phone = "123456"))
+
+        val page = findUsers(
+            name = "John",
+            sortBy = "name",
+            direction = Direction.DESC
+        )
+        verifyPage(
+            actual = page,
+            expectedPage = 0,
+            expectedSize = 2,
+            expectedHasNext = false,
+            expectedTotal = 2,
+        )
+        assertThat(page.content.map { it.id }).containsExactly(userJohnathan.id, userJohn.id)
+    }
+
+    @Test
+    fun `should search users by part of the name`() {
+        val userJohn = userRepo.save(UserEntity(name = "John", email = "john@mail.com", phone = "123456"))
+        val userJohnathan =
+            userRepo.save(UserEntity(name = "Johnathan", email = "johnathan@mail.com", phone = "123456"))
+        val userJames = userRepo.save(UserEntity(name = "James", email = "james@mail.com", phone = "123456"))
+
+        val page = findUsers(name = "nathan")
+        verifyPage(
+            actual = page,
+            expectedPage = 0,
+            expectedSize = 1,
+            expectedHasNext = false,
+            expectedTotal = 1,
+        )
+        assertThat(page.content.first().id).isEqualTo(userJohnathan.id)
+    }
+
+    @Test
+    fun `should search users by exact email match`() {
+        val userJohn = userRepo.save(UserEntity(name = "John", email = "john@mail.com", phone = "123456"))
+        val userJohnathan =
+            userRepo.save(UserEntity(name = "Johnathan", email = "johnathan@mail.com", phone = "123456"))
+        val userJames = userRepo.save(UserEntity(name = "James", email = "james@mail.com", phone = "123456"))
+
+        val page1 = findUsers(email = "james@mail.com")
+        verifyPage(
+            actual = page1,
+            expectedPage = 0,
+            expectedSize = 1,
+            expectedHasNext = false,
+            expectedTotal = 1,
+        )
+        assertThat(page1.content.first().id).isEqualTo(userJames.id)
+
+        val page2 = findUsers(email = "@mail.com")
+        verifyPage(
+            actual = page2,
+            expectedPage = 0,
+            expectedSize = 0,
+            expectedHasNext = false,
+            expectedTotal = 0,
+        )
+    }
+
+    @Test
+    fun `should search users by exact phone match`() {
+        val userJohn = userRepo.save(UserEntity(name = "John", email = "john@mail.com", phone = "1234"))
+        val userJohnathan = userRepo.save(UserEntity(name = "Johnathan", email = "johnathan@mail.com", phone = "12345"))
+        val userJames = userRepo.save(UserEntity(name = "James", email = "james@mail.com", phone = "123456"))
+
+        val page1 = findUsers(phone = "1234")
+        verifyPage(
+            actual = page1,
+            expectedPage = 0,
+            expectedSize = 1,
+            expectedHasNext = false,
+            expectedTotal = 1,
+        )
+        assertThat(page1.content.first().id).isEqualTo(userJohn.id)
+
+        val page2 = findUsers(phone = "234")
+        verifyPage(
+            actual = page2,
+            expectedPage = 0,
+            expectedSize = 0,
+            expectedHasNext = false,
+            expectedTotal = 0,
+        )
+    }
+
+    @Test
+    fun `should search by combined filters`() {
+        val userJohn = userRepo.save(UserEntity(name = "John", email = "john@mail.com", phone = "1234"))
+        val userJohnathan = userRepo.save(UserEntity(name = "Johnathan", email = "johnathan@mail.com", phone = "12345"))
+        val userJames = userRepo.save(UserEntity(name = "James", email = "james@mail.com", phone = "123456"))
+
+        val page1 = findUsers(
+            name = "john",
+            phone = "12345"
+        )
+        verifyPage(
+            actual = page1,
+            expectedPage = 0,
+            expectedSize = 1,
+            expectedHasNext = false,
+            expectedTotal = 1,
+        )
+        assertThat(page1.content.first().id).isEqualTo(userJohnathan.id)
+
+        val page2 = findUsers(
+            name = "john",
+            phone = "1234"
+        )
+        verifyPage(
+            actual = page2,
+            expectedPage = 0,
+            expectedSize = 1,
+            expectedHasNext = false,
+            expectedTotal = 1,
+        )
+        assertThat(page2.content.first().id).isEqualTo(userJohn.id)
+    }
+
     private fun findUsers(
         page: Int = 0,
         size: Int = 20,
         sortBy: String = UserSearchService.UserSortProperties.NAME.propertyName,
-        direction: Direction = Direction.ASC
+        direction: Direction = Direction.ASC,
+        name: String? = null,
+        email: String? = null,
+        phone: String? = null,
     ): Page<UserResponse> {
         val response = mockMvc.perform(
             MockMvcRequestBuilders
@@ -89,6 +219,9 @@ class UserSearchTest(
                 .queryParam("page", page.toString())
                 .queryParam("size", size.toString())
                 .queryParam("sort", "$sortBy,${direction.name.lowercase()}")
+                .queryParam("name", name)
+                .queryParam("email", email)
+                .queryParam("phone", phone)
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andExpect(MockMvcResultMatchers.status().isOk)

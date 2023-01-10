@@ -95,9 +95,17 @@ class UserController(
             size = 20,
             page = 0,
             sort = ["name,asc"],
-        ) @Parameter(hidden = true) pageable: Pageable
+        ) @Parameter(hidden = true) pageable: Pageable,
+        @RequestParam(name = "name") name: String? = null,
+        @RequestParam(name = "email") email: String? = null,
+        @RequestParam(name = "phone") phone: String? = null,
     ): Page<UserResponse> {
-        return userSearchService.searchUsers(pageable)
+        return userSearchService.searchUsers(
+            pageable = pageable,
+            name = name,
+            email = email,
+            phone = phone
+        )
     }
 
     companion object {
