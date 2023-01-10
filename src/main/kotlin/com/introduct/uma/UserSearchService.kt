@@ -89,6 +89,7 @@ class UserSearchService(
     companion object {
 
         const val MAX_PAGE_SIZE = 100
+        const val DEFAULT_PAGE_SIZE = 100
 
         private val logger = LoggerFactory.getLogger(UserSearchService::class.java)
     }
