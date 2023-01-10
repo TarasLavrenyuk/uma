@@ -59,11 +59,11 @@ class UserSearchTest(
 
     @Test
     fun `sorting should work`() {
-        val user1 = userRepo.save(UserEntity(name = "User C", email = "e@mail.com", phone = "123456"))
-        val user2 = userRepo.save(UserEntity(name = "User A", email = "e@mail.com", phone = "123456"))
-        val user3 = userRepo.save(UserEntity(name = "User E", email = "e@mail.com", phone = "123456"))
-        val user4 = userRepo.save(UserEntity(name = "User B", email = "e@mail.com", phone = "123456"))
-        val user5 = userRepo.save(UserEntity(name = "User D", email = "e@mail.com", phone = "123456"))
+        val user1 = userRepo.save(UserEntity(name = "User C", email = "ec@mail.com", phone = "123456"))
+        val user2 = userRepo.save(UserEntity(name = "User A", email = "ea@mail.com", phone = "123456"))
+        val user3 = userRepo.save(UserEntity(name = "User E", email = "ee@mail.com", phone = "123456"))
+        val user4 = userRepo.save(UserEntity(name = "User B", email = "eb@mail.com", phone = "123456"))
+        val user5 = userRepo.save(UserEntity(name = "User D", email = "ed@mail.com", phone = "123456"))
 
         assertThat(userRepo.findAll()).hasSize(5)
 

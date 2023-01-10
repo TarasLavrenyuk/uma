@@ -6,4 +6,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.stereotype.Repository
 
 @Repository
-interface UserRepo : JpaRepository<UserEntity, UUID>, JpaSpecificationExecutor<UserEntity>
+interface UserRepo : JpaRepository<UserEntity, UUID>, JpaSpecificationExecutor<UserEntity> {
+
+    fun countByEmail(email: String): Int
+}

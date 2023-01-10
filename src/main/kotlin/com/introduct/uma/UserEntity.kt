@@ -17,6 +17,9 @@ data class UserEntity(
 
     var name: String,
 
+    /**
+     * Unique field
+     */
     var email: String,
 
     var phone: String,

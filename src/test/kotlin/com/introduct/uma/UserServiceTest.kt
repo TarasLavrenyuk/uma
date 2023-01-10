@@ -39,6 +39,7 @@ class UserServiceTest {
         clearAllMocks()
 
         every { userRepo.save(any()) } returnsArgument 0
+        every { userRepo.countByEmail(any()) } returns 0
     }
 
     @Nested
@@ -95,6 +96,26 @@ class UserServiceTest {
                 .given {
                     assertThat(it.status).isEqualTo(HttpStatus.BAD_REQUEST)
                     assertThat(it.reason).isEqualTo("User phone cannot be empty. Please correct.")
+                }
+        }
+
+        @Test
+        fun `should throw exception if email is taken`() {
+            every { userRepo.countByEmail("e@mail.com") } returns 1
+
+            assertThat {
+                service.createUser(
+                    CreateUserPayload(
+                        name = "Name",
+                        email = "e@mail.com",
+                        phone = "123456",
+                    )
+                )
+            }.isFailure()
+                .isInstanceOf(InvalidUserDataException::class.java)
+                .given {
+                    assertThat(it.status).isEqualTo(HttpStatus.BAD_REQUEST)
+                    assertThat(it.reason).isEqualTo("User with email 'e@mail.com' already exists.")
                 }
         }
 
@@ -259,6 +280,30 @@ class UserServiceTest {
                 .given {
                     assertThat(it.status).isEqualTo(HttpStatus.BAD_REQUEST)
                     assertThat(it.reason).isEqualTo("User phone cannot be empty. Please correct.")
+                }
+        }
+
+        @Test
+        fun `should throw exception if email is taken`() {
+            val userId = UUID.randomUUID()
+
+            every { userRepo.findByIdOrNull(userId) } returns stubUser(userId)
+            every { userRepo.countByEmail("e@mail.com") } returns 1
+
+            assertThat {
+                service.updateUser(
+                    userId = userId,
+                    payload = UpdateUserPayload(
+                        name = "New name",
+                        email = "e@mail.com",
+                        phone = "12345678",
+                    )
+                )
+            }.isFailure()
+                .isInstanceOf(InvalidUserDataException::class.java)
+                .given {
+                    assertThat(it.status).isEqualTo(HttpStatus.BAD_REQUEST)
+                    assertThat(it.reason).isEqualTo("User with email 'e@mail.com' already exists.")
                 }
         }
 

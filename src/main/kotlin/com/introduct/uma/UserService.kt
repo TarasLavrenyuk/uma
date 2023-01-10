@@ -27,6 +27,11 @@ class UserService(
     ): UserResponse {
         logger.debug("Trying to create new user.")
         validateNewUserPayload(payload)
+
+        if (userRepo.countByEmail(payload.email.trim()) > 0) {
+            throw InvalidUserDataException("User with email '${payload.email.trim()}' already exists.")
+        }
+
         val newUser = UserEntity(
             name = payload.name.trim(),
             email = payload.email,
@@ -52,6 +57,12 @@ class UserService(
             ?: throw UserNotFoundException(userId = userId.toString())
 
         validateUpdateUserPayload(payload)
+
+        payload.email?.let { newEmail ->
+            if (userRepo.countByEmail(newEmail.trim()) > 0) {
+                throw InvalidUserDataException("User with email '${payload.email.trim()}' already exists.")
+            }
+        }
 
         existingUserEntity.apply {
             name = payload.name ?: this@apply.name
