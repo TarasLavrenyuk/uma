@@ -16,6 +16,9 @@ class UserSearchService(
     private val userRepo: UserRepo
 ) {
 
+    /**
+     * @throws InvalidArgumentException input is incorrect, for example [Pageable.getPageNumber] is negative, etc.
+     */
     fun searchUsers(
         pageable: Pageable,
         name: String?,
@@ -23,6 +26,7 @@ class UserSearchService(
         phone: String?
     ): Page<UserResponse> {
         validateSorting(pageable.sort)
+        validatePagination(pageable.pageNumber, pageable.pageSize)
         val userEntitiesPage: Page<UserEntity> = userRepo.findAll(
             buildSpecification(name, email, phone),
             pageable
@@ -34,13 +38,22 @@ class UserSearchService(
         )
     }
 
+    private fun validatePagination(pageNumber: Int, pageSize: Int) {
+        if (pageNumber < 0) {
+            throw InvalidArgumentException("Invalid page number param.")
+        }
+        if (pageSize < 0 || pageSize > MAX_PAGE_SIZE) {
+            throw InvalidArgumentException("Invalid page size param. Max page size: $MAX_PAGE_SIZE.")
+        }
+    }
+
     private fun validateSorting(sort: Sort) {
         sort.forEach {
             val propertyName = it.property
             if (propertyName !in UserSortProperties.getPropertyNames) {
                 logger.warn("Wrong parameter passed - user search order: '${propertyName}'.")
                 throw InvalidArgumentException(
-                    "Unsupported sort property: '${propertyName}.'"
+                    "Unsupported sort property: '${propertyName}'."
                 )
             }
         }
@@ -74,6 +87,8 @@ class UserSearchService(
     }
 
     companion object {
+
+        const val MAX_PAGE_SIZE = 100
 
         private val logger = LoggerFactory.getLogger(UserSearchService::class.java)
     }

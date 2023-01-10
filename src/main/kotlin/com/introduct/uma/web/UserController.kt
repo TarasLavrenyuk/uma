@@ -94,7 +94,7 @@ class UserController(
         @PageableDefault(
             size = 20,
             page = 0,
-            sort = ["name,asc"],
+            sort = ["name"],
         ) @Parameter(hidden = true) pageable: Pageable,
         @RequestParam(name = "name") name: String? = null,
         @RequestParam(name = "email") email: String? = null,
