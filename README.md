@@ -12,7 +12,7 @@ Simple rest service to store user data.
 - mockk.io - mocking framework
 - assertk - assertion framework
 - gradle - building tool
-- Docker - well, docker ¯\_(ツ)_/¯
+- Docker - well, docker ¯\\_(ツ)_/¯
 
 ## Documentation
 
