@@ -16,7 +16,7 @@ Simple rest service to store user data.
 
 ## Documentation
 
-Please go to /swagger-ui/index.html to check API documentation.
+Please go to [swagger ui](http://localhost:8080/swagger-ui/index.html) to check API documentation once it's running.
 
 ## How to run
 
