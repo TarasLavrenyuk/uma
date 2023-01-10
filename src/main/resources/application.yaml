@@ -1,6 +1,7 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:15433/uma
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/uma
     username: uma-admin
     password: just-a-pass
 

@@ -1,14 +1,39 @@
 version: '3'
 services:
-  uma-db:
+  uma-postgres:
+    container_name: uma-postgres
     image: "postgres:12"
     ports:
-      - "15433:5432"
+      - "5432:5432"
     environment:
       - POSTGRES_USER=uma-admin
       - POSTGRES_PASSWORD=just-a-pass
       - POSTGRES_DB=uma
     volumes:
       - uma-data:/var/lib/postgresql/data/
+    networks:
+      - uma-network
+
+  uma-be:
+    container_name: uma-be
+    depends_on:
+      - uma-postgres
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://uma-postgres:5432/uma
+      - SPRING_DATASOURCE_USERNAME=uma-admin
+      - SPRING_DATASOURCE_PASSWORD=just-a-pass
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: uma-be
+    ports:
+      - "8080:8080"
+    networks:
+      - uma-network
+
 volumes:
   uma-data:
+
+networks:
+  uma-network:
+    driver: bridge
