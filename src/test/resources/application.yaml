@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:12.1:///test
+    username: test
+    password: test
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+logging:
+  level:
+    com.introduct.uma: debug
+    web: trace
+    root: info

@@ -1,9 +1,14 @@
 package com.introduct.uma.web
 
 import java.util.UUID
+import com.introduct.uma.UserSearchService
 import com.introduct.uma.UserService
 import com.introduct.uma.exceptions.InvalidArgumentException
+import io.swagger.v3.oas.annotations.Parameter
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -19,7 +24,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/users")
 class UserController(
-    private val userService: UserService
+    private val userService: UserService,
+    private val userSearchService: UserSearchService
 ) {
 
     @PostMapping
@@ -83,8 +89,16 @@ class UserController(
         return ResponseEntity.ok(userService.getUser(userId = userId))
     }
 
-    // GET /users?limit=&offset=&sort=name_asc|name_desc|email_asc|age_asc|age_desc&name=&email=&phone=
-    // find user by different criterias
+    @GetMapping
+    fun searchUsers(
+        @PageableDefault(
+            size = 20,
+            page = 0,
+            sort = ["name,asc"],
+        ) @Parameter(hidden = true) pageable: Pageable
+    ): Page<UserResponse> {
+        return userSearchService.searchUsers(pageable)
+    }
 
     companion object {
 
